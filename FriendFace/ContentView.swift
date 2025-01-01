@@ -13,21 +13,31 @@ struct ContentView: View {
     
     var body: some View {
         
-        Text("Hello World")
-        
-        List(users, id: \.id) { user in
-            Text(user.name)
-        }
-        .task {
-            await loadData()
+        NavigationStack {
+            List(users, id: \.id) { user in
+                HStack {
+                    Text(user.name)
+                    Spacer()
+                    Image(systemName: user.isActive ? "circle.fill" : "circle")
+                        .foregroundStyle(user.isActive ? .green : .gray)
+                }
+            }
+            .navigationTitle("FriendFace")
+            .task {
+                await loadData()
+            }
         }
     }
     
     func loadData() async {
-        
         //Create the URL we want to read
         guard let url = URL(string: "https://www.hackingwithswift.com/samples/friendface.json") else {
             print("Invalid URL")
+            return
+        }
+        
+        //Ensure user array is empty to prevent download start every time view is shown
+        guard users.isEmpty else {
             return
         }
         
