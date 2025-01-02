@@ -16,13 +16,16 @@ struct ContentView: View {
         NavigationStack {
             List(users, id: \.id) { user in
                 HStack {
-                    Text(user.name)
-                    Spacer()
                     Image(systemName: user.isActive ? "circle.fill" : "circle")
                         .foregroundStyle(user.isActive ? .green : .gray)
+                    
+                    NavigationLink(user.name, value: user)
                 }
             }
             .navigationTitle("FriendFace")
+            .navigationDestination(for: User.self, destination: { userSelection in
+                UserDetails(user: userSelection)
+            })
             .task {
                 await loadData()
             }
@@ -46,8 +49,12 @@ struct ContentView: View {
             //.data(from:) takes a URL and returns Data object of that URL
             let (data, _) = try await URLSession.shared.data(from: url)
             
+            //Set decoding strategy of the date to iso8601
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            
             //Decode the result of that data into a User struct using JSONDecoder()
-            let decodedResponse = try JSONDecoder().decode([User].self, from: data)
+            let decodedResponse = try decoder.decode([User].self, from: data)
                 users = decodedResponse
                 print("X")
             
